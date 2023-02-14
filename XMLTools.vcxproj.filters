@@ -99,6 +99,18 @@
     <ClCompile Include="MSXMLWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LibxmlWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CVerifyXPathOnSchemaDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="CVerifyXPathMessageBox.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="CVerifyXPathDebug.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="XMLTools.def">
@@ -183,6 +195,21 @@
     </ClInclude>
     <ClInclude Include="nppMenu.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LibxmlWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CVerifyXPathOnSchemaDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="CVerifyXPathMessageBox.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="VerifyXPathMessages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CVerifyXPathDebug.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

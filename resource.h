@@ -84,6 +84,7 @@
 #define IDC_CHECK1                      2046
 #define IDC_CHKPPAUTOCLOSE              2046
 #define IDI_CURRENTXPATH_DM             2046
+#define IDC_DO_LOADFROMFILE             2046
 #define IDC_CHECK2                      2047
 #define IDC_CHKMULTIPLEERRORS           2047
 #define IDI_CURRENTXPATHNS              2047
@@ -100,38 +101,58 @@
 #define IDC_LNKHOMEPAGE                 2056
 #define IDI_FIRST_DM                    2056
 #define IDI_LAST                        2057
+#define IDC_XPATHVERIFY_QUERY           2057
 #define IDI_LAST_DM                     2058
+#define IDC_LOADFILEPATH                2058
 #define IDI_LINEARIZE                   2059
 #define IDI_LINEARIZE_DM                2060
+#define IDC_OPENSCHEMAFILE              2060
 #define IDI_NEXT                        2061
+#define ID_VERIFYXPATH                  2061
 #define IDI_NEXT_DM                     2062
 #define IDI_OPTIONS                     2063
 #define IDI_OPTIONS_DM                  2064
+#define IDC_CLEAR_XPATHVERIFY           2064
 #define IDI_PRETTYPRINT                 2065
 #define IDI_PRETTYPRINT_DM              2066
+#define IDC_XPATHVERIFY_CLOSE           2066
 #define IDI_PRETTYPRINTINDENTATTR       2067
+#define IDC_STATIC_HOWTOPICK            2067
 #define IDI_PRETTYPRINTINDENTATTR_DM    2068
+#define IDC_XPATHVERIFY_VIEWLOGS        2068
 #define IDI_PRETTYPRINTINDENTONLY       2069
+#define IDC_STATIC_XPATHVERIFY_DESCRIPTION 2069
 #define IDI_IDI_PRETTYPRINTINDENTONLY_DM 2070
 #define IDI_PRETTYPRINTINDENTONLY_DM    2070
 #define IDI_PREV                        2071
 #define IDI_PREV_DM                     2072
+#define IDC_EDIT1                       2072
 #define IDI_UNCOMMENT                   2073
+#define IDC_BUTTON2                     2073
 #define IDI_UNCOMMENT_DM                2074
+#define IDC_LIST2                       2074
 #define IDI_UNESCAPE                    2075
 #define IDI_UNESCAPE_DM                 2076
 #define IDI_VALIDATEXML                 2077
 #define IDI_VALIDATEXML_DM              2078
 #define IDI_XSLTRANSFORM                2079
 #define IDI_XSLTRANSFORM_DM             2080
+#define IDD_XPATHVERIFY                 2081
+#define IDC_XPATHVERIFY_XMLNS           2082
+#define IDC_XMLNS_CHOOSE_TEXT           2083
+#define IDC_CLEAR_XPATHVERIFY_XMLNS     2084
+#define IDD_XPATHVERIFY_LOG             2087
+#define IDC_LIST_XPATHV_MESSAGES        2088
+#define IDC_LIST_XPATHV_CLEAR           2089
+#define IDD_XPATHVERIFY_DBG             2090
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2081
+#define _APS_NEXT_RESOURCE_VALUE        2092
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2057
+#define _APS_NEXT_CONTROL_VALUE         2075
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

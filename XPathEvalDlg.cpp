@@ -9,7 +9,9 @@
 #include "MSXMLHelper.h"
 #include "XmlWrapperInterface.h"
 #include "MSXMLWrapper.h"
+#include "LibxmlWrapper.h"
 #include <assert.h>
+#include <stdlib.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,6 +23,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CXPathEvalDlg dialog
+// TODO add line, linepos and filepos columns in table
 
 CXPathEvalDlg::CXPathEvalDlg(CWnd* pParent /*=NULL*/, unsigned long flags /*= 0*/)
   : CDialog(CXPathEvalDlg::IDD, pParent)
@@ -96,7 +99,8 @@ int CXPathEvalDlg::execute_xpath_expression(CStringW xpathExpr) {
 
     ::SendMessage(hCurrentEditView, SCI_GETTEXT, currentLength + sizeof(char), reinterpret_cast<LPARAM>(data));
 
-    XmlWrapperInterface* wrapper = new MSXMLWrapper(data, currentLength);
+    // TODO revert to XMLWrapperInterface* after figuring out conversion to a better logging convention
+    MSXMLWrapper* wrapper = new MSXMLWrapper(data, currentLength);
     delete[] data; data = NULL;
 
     std::vector<XPathResultEntryType> nodes = wrapper->xpathEvaluate(xpathExpr.GetString(), m_sNamespace.GetString());
@@ -128,10 +132,12 @@ void CXPathEvalDlg::print_xpath_nodes(std::vector<XPathResultEntryType> nodes) {
     listresults->DeleteAllItems();
 
     if (nodes.size() == 0) {
+      // TODO add line, linepos and filepos
         AddToList(listresults, "", "No result", "");
     }
     else {
         for (std::vector<XPathResultEntryType>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+            // TODO add line, linepos and filepos
             AddToList(listresults, Report::cstring((*it).type.c_str()),
                                    Report::cstring((*it).name.c_str()),
                                    Report::cstring((*it).value.c_str()));

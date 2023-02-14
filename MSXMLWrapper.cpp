@@ -335,6 +335,10 @@ std::vector<XPathResultEntryType> MSXMLWrapper::xpathEvaluate(std::wstring xpath
                 bstrNodeType,
                 bstrNodeName,
                 value
+                // TODO add line, linepos and filepos; check if these are correct
+                /*line,
+                linepos,
+                filepos*/
             });
 
             SysFreeString(bstrNodeName);

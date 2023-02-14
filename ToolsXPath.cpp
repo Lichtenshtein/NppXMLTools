@@ -6,6 +6,7 @@
 #include "XmlFormater.h"
 
 #include "XPathEvalDlg.h"
+#include "CVerifyXPathOnSchemaDlg.h"
 
 using namespace QuickXml;
 
@@ -118,5 +119,24 @@ void evaluateXPath() {
         pXPathEvalDlg->Create(CXPathEvalDlg::IDD, NULL);
     }
     pXPathEvalDlg->ShowWindow(SW_SHOW);
+#endif
+}
+
+CVerifyXPathOnSchemaDlg* pVerifyXPathOnSchemaDlg = NULL;
+
+void verifyXPathOnSchema()
+{
+    dbgln("verifyXPathOnSchema()");
+#if true
+    if (pVerifyXPathOnSchemaDlg == NULL) {
+        pVerifyXPathOnSchemaDlg = new CVerifyXPathOnSchemaDlg(NULL);
+    }
+    pVerifyXPathOnSchemaDlg->DoModal();
+#else
+    if (pVerifyXPathOnSchemaDlg == NULL) {
+        pVerifyXPathOnSchemaDlg = new CVerifyXPathOnSchemaDlg(NULL);
+        pVerifyXPathOnSchemaDlg->Create(CVerifyXPathOnSchemaDlg::IDD, NULL);
+    }
+    pVerifyXPathOnSchemaDlg->ShowWindow(SW_SHOW);
 #endif
 }

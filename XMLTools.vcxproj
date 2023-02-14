@@ -31,14 +31,14 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -59,12 +59,15 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="_props\XMLTools.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="_props\XMLTools.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="_props\XMLTools.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -184,7 +187,6 @@
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -195,7 +197,6 @@
       <ProgramDatabaseFile>.\Debug/XMLTools.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>.\Debug/XMLTools.lib</ImportLibrary>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <MinimumRequiredVersion />
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -211,10 +212,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x100c</Culture>
     </ResourceCompile>
-    <PostBuildEvent>
-      <Command>if EXIST "$(ProgramFiles)\Notepad++\plugins\" ( xcopy /y "$(TargetPath)" "$(ProgramFiles)\Notepad++\plugins\XMLTools\" )</Command>
-      <Message>Copy the dll into Notepad++ plugin folder</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -294,7 +292,6 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -306,7 +303,6 @@
       <ProgramDatabaseFile>.\Debug/XMLTools.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>.\Debug\XMLTools.lib</ImportLibrary>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
       <MinimumRequiredVersion>
@@ -332,7 +328,11 @@
   <ItemGroup>
     <ClCompile Include="AboutBoxDlg.cpp" />
     <ClCompile Include="CMyPropertyGridCtrl.cpp" />
+    <ClCompile Include="CVerifyXPathDebug.cpp" />
+    <ClCompile Include="CVerifyXPathMessageBox.cpp" />
+    <ClCompile Include="CVerifyXPathOnSchemaDlg.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="LibxmlWrapper.cpp" />
     <ClCompile Include="MSXMLWrapper.cpp" />
     <ClCompile Include="nppMenu.cpp" />
     <ClCompile Include="ToolsComment.cpp" />
@@ -375,8 +375,12 @@
     <ClInclude Include="AboutBoxDlg.h" />
     <ClInclude Include="CMyPropertyGridCtrl.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="CVerifyXPathDebug.h" />
+    <ClInclude Include="CVerifyXPathMessageBox.h" />
+    <ClInclude Include="CVerifyXPathOnSchemaDlg.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DebugDlg.h" />
+    <ClInclude Include="LibxmlWrapper.h" />
     <ClInclude Include="MSXMLHelper.h" />
     <ClInclude Include="MSXMLWrapper.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
@@ -390,6 +394,7 @@
     <ClInclude Include="ScintillaDoc.h" />
     <ClInclude Include="Sci_Position.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="VerifyXPathMessages.h" />
     <ClInclude Include="XMLTools.h" />
     <ClInclude Include="HowtoUseDlg.h" />
     <ClInclude Include="InputDlg.h" />

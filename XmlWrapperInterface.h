@@ -9,6 +9,10 @@ struct XPathResultEntryType {
     std::wstring type;
     std::wstring name;
     std::wstring value;
+
+    size_t line = 0;        // 0-based line number of match in file
+    size_t linepos = 0;     // 0-based position in line
+    size_t filepos = 0;     // 0-based position in whole stream
 };
 
 struct XSLTransformResultType {
@@ -22,6 +26,12 @@ struct ErrorEntryType {
     size_t linepos;      // 0-based position in line
     size_t filepos;      // 0-based position in whole stream
     std::wstring reason; // error description
+};
+
+struct LoggingEntryType {
+    std::wstring context = L""; // Context of logging entry
+    std::wstring level;         // Level used in logging
+    std::wstring message;       // Message from logger
 };
 
 struct ErrorEntryDesc {
@@ -78,9 +88,10 @@ struct XmlWrapperOptionType {
 * an XML-API wrapper.
 */
 
+template<typename GenericEntryType = ErrorEntryType>
 class XmlWrapperInterface {
 protected:
-    std::vector<ErrorEntryType> errors;
+    std::vector<GenericEntryType> errors;
 
     // A map with wrapper options
     std::map<std::string, XmlWrapperOptionType> options;
@@ -148,7 +159,7 @@ public:
     * Get errors of last executed action
     * @return A vector of errors descriptions
     */
-    std::vector<ErrorEntryType> getLastErrors() {
+    std::vector<GenericEntryType> getLastErrors() {
         return this->errors;
     }
 
