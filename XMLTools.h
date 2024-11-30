@@ -18,11 +18,14 @@
 #include "Config.h"
 #include "Debug.h"
 #include <string>
+#include "SaxonCHEHelper/SaxonCHelper.h"
+
+extern SaxonCHelper* saxoncHelper;
 
 //---------------------------------------------------------------------------
 
-#define XMLTOOLS_VERSION_NUMBER L"3.1.1.14 beta"
-#define XMLTOOLS_HOMEPAGE_URL L"https://github.com/morbac/xmltools"
+#define XMLTOOLS_VERSION_NUMBER L"3.1.1.15 beta"
+#define XMLTOOLS_HOMEPAGE_URL L"https://github.com/martin-honnen/xmltools"
 #ifdef V64BIT
 #define XMLTOOLS_VERSION_STATUS L"unicode 64bit"
 #else

@@ -99,6 +99,12 @@
     <ClCompile Include="MSXMLWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XSLT3TransformDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolsXSLT3Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="LibxmlWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -194,6 +200,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nppMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XSLT3TransformDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LibxmlWrapper.h">

@@ -96,6 +96,8 @@ CXMLToolsApp* theApp = new CXMLToolsApp();
 NppData nppData;
 HHOOK hook = NULL;
 
+SaxonCHelper* saxoncHelper = SaxonCHelper::getInstance();
+
 // Here're the declaration my functions ///////////////////////////////////////
 void initMenu();
 void destroyMenu();

@@ -180,6 +180,10 @@ void initMenu() {
 
     addMenuSeparator();
 
+    menuitems.menuitemXSLTransform = addMenuItem(L"XSLT 3.0 Transformation...", performXSLT3Transform);
+
+    addMenuSeparator();
+
     menuitems.menuitemEscape = addMenuItem(L"Escape characters in selection (<> → &&lt;&&gt;)", nppConvertXML2Text);
     menuitems.menuitemUnescape = addMenuItem(L"Unescape characters in selection (&&lt;&&gt; → <>)", nppConvertText2XML);
 

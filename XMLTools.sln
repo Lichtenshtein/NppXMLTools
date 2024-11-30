@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.4.33403.182
+VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLTools", "XMLTools.vcxproj", "{3CA1BA6F-6F79-2DC7-7E96-6B4E11A31EFC}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,6 +23,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StringXml", "StringXmlLib\StringXml\StringXml.vcxproj", "{A3961AD9-8311-4929-BAB7-D022452944A8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StringXmlTests", "StringXmlLib\StringXmlTests\StringXmlTests.vcxproj", "{A3F154D3-1E5D-429D-B666-F1E7E47B7BE7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SaxonCHEHelper", "SaxonCHEHelper\SaxonCHEHelper.vcxproj", "{4DB8958A-2F94-4448-AA89-53DA05B32341}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,6 +98,14 @@ Global
 		{A3F154D3-1E5D-429D-B666-F1E7E47B7BE7}.Release|Win32.Build.0 = Release|Win32
 		{A3F154D3-1E5D-429D-B666-F1E7E47B7BE7}.Release|x64.ActiveCfg = Release|x64
 		{A3F154D3-1E5D-429D-B666-F1E7E47B7BE7}.Release|x64.Build.0 = Release|x64
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Debug|Win32.Build.0 = Debug|Win32
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Debug|x64.ActiveCfg = Debug|x64
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Debug|x64.Build.0 = Debug|x64
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Release|Win32.ActiveCfg = Release|Win32
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Release|Win32.Build.0 = Release|Win32
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Release|x64.ActiveCfg = Release|x64
+		{4DB8958A-2F94-4448-AA89-53DA05B32341}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

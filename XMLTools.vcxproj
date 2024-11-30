@@ -123,7 +123,7 @@
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)\SaxonCHEHelper\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -230,7 +230,7 @@
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)QuickXmlLib\QuickXml\src;$(SolutionDir)SimpleXmlLib\SimpleXml\src;$(SolutionDir)StringXmlLib\StringXml\src;$(SolutionDir)\SaxonCHEHelper\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -356,12 +356,14 @@
     <ClCompile Include="ToolsXLSTransform.cpp" />
     <ClCompile Include="ToolsXmlValidate.cpp" />
     <ClCompile Include="ToolsXPath.cpp" />
+    <ClCompile Include="ToolsXSLT3Transform.cpp" />
     <ClCompile Include="XMLTools.cpp" />
     <ClCompile Include="HowtoUseDlg.cpp" />
     <ClCompile Include="InputDlg.cpp" />
     <ClCompile Include="MessageDlg.cpp" />
     <ClCompile Include="SelectFileDlg.cpp" />
     <ClCompile Include="XPathEvalDlg.cpp" />
+    <ClCompile Include="XSLT3TransformDlg.cpp" />
     <ClCompile Include="XSLTransformDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -400,6 +402,7 @@
     <ClInclude Include="MessageDlg.h" />
     <ClInclude Include="SelectFileDlg.h" />
     <ClInclude Include="XmlWrapperInterface.h" />
+    <ClInclude Include="XSLT3TransformDlg.h" />
     <ClInclude Include="XSLTransformDlg.h" />
     <ClInclude Include="XpathEvalDlg.h" />
   </ItemGroup>
@@ -410,6 +413,9 @@
   <ItemGroup>
     <ProjectReference Include="QuickXmlLib\QuickXml\QuickXml.vcxproj">
       <Project>{729df6d2-7831-4608-8afb-d4fce5872a88}</Project>
+    </ProjectReference>
+    <ProjectReference Include="SaxonCHEHelper\SaxonCHEHelper.vcxproj">
+      <Project>{4db8958a-2f94-4448-aa89-53da05b32341}</Project>
     </ProjectReference>
     <ProjectReference Include="SimpleXmlLib\SimpleXml\SimpleXml.vcxproj">
       <Project>{c7cf5da7-16d1-4e03-936a-b71cac37d26c}</Project>

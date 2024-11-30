@@ -131,7 +131,68 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
-// French (France) resources
+// Deutsch (Deutschland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_XSLT3DLG DIALOGEX 0, 0, 311, 179
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Transform with XSLT 3"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_XSLT3FILE_EDIT,14,14,247,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BTN_XSLT3FILESELECT,262,14,35,14
+    GROUPBOX        "XSLT 3 input type selection",IDC_GROUP_XSLT3_INPUTTYPE,14,34,282,31
+    CONTROL         "XML",IDC_RADIO_INPUT_XML,"Button",BS_AUTORADIOBUTTON | WS_GROUP,31,47,29,10
+    CONTROL         "JSON",IDC_RADIO_INPUT_JSON,"Button",BS_AUTORADIOBUTTON,81,47,33,10
+    CONTROL         "None",IDC_RADIO_INPUT_NONE,"Button",BS_AUTORADIOBUTTON,125,47,33,10
+    LTEXT           "Select an XML or JSON input file if the active document is an XSLT 3 stylesheet. If the active document is an XML or JSON input file select an XSLT 3 stylesheet.",IDC_STATIC_XSLT3_INSTRCT,15,71,281,38
+    PUSHBUTTON      "Transform",IDC_BTN_XSLT3_TRANSFORM,193,107,101,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_XSLT3DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 304
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 172
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_XSLT3DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Deutsch (Deutschland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Franzosisch (Frankreich) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
@@ -302,12 +363,12 @@ IDI_XSLTRANSFORM        ICON                    "res\\XslTransform.ico"
 
 IDI_XSLTRANSFORM_DM     ICON                    "res\\XslTransform_DM.ico"
 
-#endif    // French (France) resources
+#endif    // Französisch (Frankreich) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// French (Switzerland) resources
+// Französisch (Schweiz) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRS)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH_SWISS
@@ -677,7 +738,7 @@ BEGIN
     0
 END
 
-#endif    // French (Switzerland) resources
+#endif    // Französisch (Schweiz) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by XMLTools.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch XMLTools.rc
 //
 #define IDD_INPUTDLG                    2000
 #define IDC_STATIC_CAPTION              2000
@@ -103,18 +103,26 @@
 #define IDI_LAST                        2057
 #define IDC_XPATHVERIFY_QUERY           2057
 #define IDI_LAST_DM                     2058
+#define IDC_XSLT3FILE_EDIT              2058
 #define IDC_LOADFILEPATH                2058
 #define IDI_LINEARIZE                   2059
+#define IDC_BTN_XSLT3FILESELECT         2059
 #define IDI_LINEARIZE_DM                2060
+#define IDC_GROUP_XSLT3_INPUTTYPE       2060
 #define IDC_OPENSCHEMAFILE              2060
 #define IDI_NEXT                        2061
+#define IDC_RADIO_INPUT_XML             2061
 #define ID_VERIFYXPATH                  2061
 #define IDI_NEXT_DM                     2062
+#define IDC_RADIO_INPUT_JSON            2062
 #define IDI_OPTIONS                     2063
+#define IDC_RADIO_INPUT_NONE            2063
 #define IDI_OPTIONS_DM                  2064
 #define IDC_CLEAR_XPATHVERIFY           2064
 #define IDI_PRETTYPRINT                 2065
+#define IDC_STATIC_XSLT3_INSTRCT        2065
 #define IDI_PRETTYPRINT_DM              2066
+#define IDC_BTN_XSLT3_TRANSFORM         2066
 #define IDC_XPATHVERIFY_CLOSE           2066
 #define IDI_PRETTYPRINTINDENTATTR       2067
 #define IDC_STATIC_HOWTOPICK            2067
@@ -137,6 +145,7 @@
 #define IDI_VALIDATEXML_DM              2078
 #define IDI_XSLTRANSFORM                2079
 #define IDI_XSLTRANSFORM_DM             2080
+#define IDD_XSLT3DLG                    2081
 #define IDD_XPATHVERIFY                 2081
 #define IDC_XPATHVERIFY_XMLNS           2082
 #define IDC_XMLNS_CHOOSE_TEXT           2083
@@ -150,9 +159,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2092
+#define _APS_NEXT_RESOURCE_VALUE        2083
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2075
+#define _APS_NEXT_CONTROL_VALUE         2067
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

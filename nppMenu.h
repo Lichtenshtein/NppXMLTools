@@ -48,6 +48,8 @@ void verifyXPathOnSchema();
 
 void performXSLTransform();
 
+void performXSLT3Transform();
+
 void aboutBox();
 void optionsDlg();
 

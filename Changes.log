@@ -4,6 +4,14 @@
                         ChangeLog
 ================================================================
 
+Release 3.1.1.15 beta
+-------------
+- Update XSLT 3.0 support to use latest SaxonC HE 12.8
+
+Release 3.1.1.14 beta
+-------------
+- Add XSLT 3.0 support by integrating SaxonC HE 12.7
+
 Release 3.0.0
 -------------
 Replace libXML with MSXML

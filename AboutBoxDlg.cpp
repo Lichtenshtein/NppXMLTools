@@ -41,13 +41,19 @@ END_MESSAGE_MAP()
 BOOL CAboutBoxDlg::OnInitDialog()
 {
   CDialog::OnInitDialog();
+  const char* saxonVersion = saxoncHelper->getSaxonProcessor()->version();
+  size_t length = strlen(saxonVersion);
+
+  wchar_t saxonVersion_W[30];
+
+  mbstowcs_s(&length, saxonVersion_W, saxonVersion, length);
 
   #ifdef _DEBUG
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s (debug)\r\n\r\nXML engine: MSXML\r\n\r\nXML engine (for XPath satisfiability check): libxml2 (custom build)",
-          XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s (debug)\r\nXML engine: MSXML\r\nSaxon: %s\r\nXML engine (for XPath satisfiability check): libxml2 (custom build)",
+          XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS, saxonVersion_W).c_str());
   #else
-    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s\r\n\r\nXML engine: MSXML\r\n\r\nXML engine (for XPath satisfiability check): libxml2 (custom build)",
-        XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS).c_str());
+    SetDlgItemTextW(IDC_ABOUTTEXT, Report::str_format(L"XML Tools Plugin\r\nversion %s\r\n%s\r\nXML engine: MSXML\r\nSaxon: %s\r\nXML engine (for XPath satisfiability check): libxml2 (custom build)",
+        XMLTOOLS_VERSION_NUMBER, XMLTOOLS_VERSION_STATUS, saxonVersion_W).c_str());
   #endif
 
   GetDlgItem(IDC_LNKHOMEPAGE)->SetWindowText(Report::str_format(L"<a href=\"%s\">%s</a>", XMLTOOLS_HOMEPAGE_URL, XMLTOOLS_HOMEPAGE_URL).c_str());
