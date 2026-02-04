@@ -80,7 +80,6 @@ jobs:
      - name: Disable Precompiled Header
        shell: pwsh
        run: |
-         # 
          (Get-Content main\XMLTools.vcxproj) -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content main\XMLTools.vcxproj
 
       - name: Build XMLTools
