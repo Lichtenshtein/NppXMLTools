@@ -1,35 +1,105 @@
-name: Continuous Integration
+name: Build XMLTools
 
-on: [push, pull_request]
+on:
+#  push:
+#    branches: [ main ]
+#    tags: [ 'v*' ]
+#  pull_request:
+#    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-
-    runs-on: windows-latest
+    runs-on: windows-2022
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
-        build_configuration: [Release, Debug]
-        build_platform: [x64, Win32]
-        
+        platform: [Win32, x64]
+        configuration: [Release]
+        toolset: [v143]
+
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
-      with:
-        submodules: 'true'
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
-    - name: Setup NuGet.exe
-      uses: nuget/setup-nuget@v1
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
 
-    - name: Restore
-      working-directory: .
-      run: nuget restore XMLTools.sln
+      - name: Restore NuGet Packages
+        run: |
+          nuget restore SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory packages
 
-    - name: MSBuild of solution
-      working-directory: .
-      run: msbuild XMLTools.sln /m /verbosity:minimal /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}"
+      - name: Build Solution
+        run: |
+          msbuild XMLTools.sln `
+            /m `
+            /p:Configuration="${{ matrix.configuration }}" `
+            /p:Platform="${{ matrix.platform }}" `
+            /p:PlatformToolset="${{ matrix.toolset }}"
 
+      - name: Prepare Artifacts
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: |
+          $platform = "${{ matrix.platform }}"
+          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
+          $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
+          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
 
+          $dllPath = "$platform\${{ matrix.configuration }}\XMLTools.dll"
+
+          if (Test-Path $dllPath) {
+              7z a -t7z -mx9 $archiveName $dllPath
+              echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
+          } else {
+              Write-Error "DLL not found at $dllPath"
+              exit 1
+          }
+
+      - name: Upload to Workflow
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.platform }}
+          path: XMLTools_*.7z
+          retention-days: 1
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request' && (github.ref_type == 'tag' || github.ref_name == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+
+      - name: Set Release Tag
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "RELEASE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_TAG=latest-build" >> $GITHUB_ENV
+          fi
+
+      - name: Delete Old Release (Auto-builds only)
+        if: github.ref_type != 'tag'
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          delete_release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: "*.7z"
+          generate_release_notes: true
+          prerelease: ${{ github.ref_type != 'tag' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
