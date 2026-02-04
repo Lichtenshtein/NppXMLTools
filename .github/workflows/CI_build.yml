@@ -89,7 +89,6 @@ jobs:
           # Add /p:LinkIncremental=false to avoid build conflicts
           # /p:PrecompiledHeader=NotUsing disables the requirement for stdafx.h on all platforms. Win32 should build now.
           # Use UseSharedCompilation=false and ForceNoVpch to suppress PCH
-msbuild XMLTools.sln `
           msbuild XMLTools.sln `
             /m `
             /p:Configuration="${{ matrix.configuration }}" `
