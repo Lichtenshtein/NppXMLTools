@@ -38,26 +38,25 @@ jobs:
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          $projFile = "main\XMLTools.vcxproj"
-          $content = Get-Content $projFile -Raw
-          
-          $content = $content -replace 'libxml2(-static)?\.lib', ''
-          $content = $content -replace '[^; \t\r\n]+\\libxml2\.lib', ''
-          $content = $content -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>'
-          
-          $content | Set-Content $projFile
-          
+          $libxmlInc = "$libxmlBase\include\libxml2"
+          $libxmlLibDir = "$libxmlBase\lib"
+          (Get-Content $projFile) `
+            -replace '[^; \t\r\n]+\\libxml2\.lib', 'libxml2.lib' `
+            -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content $projFile
+
           vcpkg integrate install
           vcpkg install gtest:x86-windows
-          echo "CL=/I`"$libxmlBase\include\libxml2`" /I`"C:\vcpkg\installed\x86-windows\include`"" >> $env:GITHUB_ENV
-          echo "LINK=/LIBPATH:`"$libxmlBase\lib`" libxml2.lib" >> $env:GITHUB_ENV
+
+          echo "CL=/I`"$libxmlInc`" /I`"$vcpkgInc`"" >> $env:GITHUB_ENV
+          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
+          echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
           echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
 
       - name: Build Win32
         run: |
           cd main
           nuget restore XMLTools.sln
-          msbuild XMLTools.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143
+          msbuild XMLTools.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:LinkIncremental=false
 
       - name: Prepare Artifact
         shell: pwsh
