@@ -61,21 +61,13 @@ jobs:
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          
-          # DEBUGGING: Finding where the file is physically located
-          Write-Host "Searching for xmlschemas.h..."
-          Get-ChildItem -Path "$(Get-Location)\libxml2_source" -Filter "xmlschemas.h" -Recurse | ForEach-Object { $_.FullName }
-          
-          # nmake install copies files to build\include\libxml
-          # For #include <libxml/xxx.h> to work, the path must point to build\include
-          $libxmlInc = "$libxmlBase\include"
+          $libxmlInc = "$libxmlBase\include\libxml2"
           $libxmlLibDir = "$libxmlBase\lib"
-          
+
           $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
           $vcpkgInc = "C:\vcpkg\installed\$triplet\include"
-          
-          # Set INCLUDE. If libxml2 puts files in include/libxml2/libxml, then we'll add both options to be safe.
-          echo "INCLUDE=$libxmlInc;$libxmlInc\libxml2;$vcpkgInc;$env:INCLUDE" >> $env:GITHUB_ENV
+
+          echo "CL=/I`"$libxmlInc`" /I`"$vcpkgInc`"" >> $env:GITHUB_ENV
           echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
           echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
           echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
