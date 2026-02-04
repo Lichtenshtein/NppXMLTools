@@ -32,27 +32,32 @@ jobs:
 
       - name: Install Dependencies (vcpkg)
         run: |
-          # vcpkg integration with MSBuild (automatically sets include/lib paths)
           vcpkg integrate install
           
-          # Installing libxml2 and gtest for the required architectures
           if ("${{ matrix.platform }}" -eq "x64") {
-            vcpkg install libxml2:x64-windows gtest:x64-windows
+            $triplet = "x64-windows"
+          } else {
+            $triplet = "x86-windows"
           }
-          if ("${{ matrix.platform }}" -eq "Win32") {
-            vcpkg install libxml2:x86-windows gtest:x86-windows
+          
+          vcpkg install libxml2:$triplet gtest:$triplet
+          
+          # vcpkg places files in include/libxml2/libxml.
+          # Create a symlink or copy it so the compiler sees the libxml/*.h path.
+          $vcpkgInclude = "C:/vcpkg/installed/$triplet/include"
+          if (Test-Path "$vcpkgInclude/libxml2/libxml") {
+              New-Item -ItemType Junction -Path "$vcpkgInclude/libxml" -Target "$vcpkgInclude/libxml2/libxml"
           }
 
-#      - name: Restore NuGet Packages
-#        run: |
-#          nuget restore SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory packages
-          
       - name: Restore NuGet Packages2
         run: |
           nuget restore XMLTools.sln
 
       - name: Build Solution
         run: |
+          $triplet = if ("${{ matrix.platform }}" -eq "x64") { "x64-windows" } else { "x86-windows" }
+          $env:IncludePath = "C:\vcpkg\installed\$triplet\include;" + $env:IncludePath
+          
           msbuild XMLTools.sln `
             /m `
             /p:Configuration="${{ matrix.configuration }}" `
