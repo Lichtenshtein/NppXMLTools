@@ -39,9 +39,13 @@ jobs:
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
           $projFile = "main\XMLTools.vcxproj"
-          (Get-Content $projFile) `
-            -replace '[^; \t\r\n]+\\libxml2\.lib', 'libxml2.lib' `
-            -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content $projFile
+          $content = Get-Content $projFile -Raw
+          
+          $content = $content -replace 'libxml2(-static)?\.lib', ''
+          $content = $content -replace '[^; \t\r\n]+\\libxml2\.lib', ''
+          $content = $content -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>'
+          
+          $content | Set-Content $projFile
           
           vcpkg integrate install
           vcpkg install gtest:x86-windows
@@ -60,9 +64,11 @@ jobs:
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
           $archiveName = "XMLTools_$($tagName)_x86.7z"
+
           New-Item -ItemType Directory -Path "dist"
           Copy-Item "main\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
-          cd dist ; 7z a -t7z -mx9 "../../$archiveName" *
+
+          7z a -t7z -mx9 "$archiveName" ./dist/*
           echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
       - name: Upload Win32
@@ -124,9 +130,11 @@ jobs:
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
           $archiveName = "XMLTools_$($tagName)_x64.7z"
+
           New-Item -ItemType Directory -Path "dist"
           Copy-Item "main\x64\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
-          cd dist ; 7z a -t7z -mx9 "../../$archiveName" *
+
+          7z a -t7z -mx9 "$archiveName" ./dist/*
           echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
       - name: Upload x64
