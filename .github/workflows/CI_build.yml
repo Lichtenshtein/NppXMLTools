@@ -37,25 +37,33 @@ jobs:
       - name: Build Custom libxml2
         shell: cmd
         run: |
-          cd libxml2_source\win32
-          :: Setting up the compiler environment (x86 or x64)
-          set ARCH=%{{ matrix.platform }}%
-          if "%ARCH%"=="Win32" set ARCH=x86
+          :: Find the path to vcvarsall.bat (for VS 2022 Enterprise on Runner)
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform == 'Win32' && 'x86' || 'x64' }}
           
-          cscript configure.js compiler=msvc prefix=..\build include=..\include lib=..\lib iconv=no icu=no
+          cd libxml2_source\win32
+          
+          cscript configure.js compiler=msvc prefix=..\build include=..\include lib=..\lib iconv=no icu=no zlib=no
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          
           nmake /f Makefile.msvc
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          
           nmake /f Makefile.msvc install
+          if %errorlevel% neq 0 exit /b %errorlevel%
 
       - name: Prepare Include Paths
         shell: pwsh
         run: |
-          # We create paths for the compiler so that it can see our custom libxml2
-          $libxmlInc = "$(Get-Location)\libxml2_source\include"
-          $libxmlLib = "$(Get-Location)\libxml2_source\bin.msvc"
+          # Paths after 'nmake install' inside libxml2_source
+          $libxmlBase = "$(Get-Location)\libxml2_source\build"
+          $libxmlInc = "$libxmlBase\include\libxml2"
+          $libxmlLib = "$libxmlBase\lib"
+          $libxmlBin = "$libxmlBase\bin" # Здесь лежит dll
           
-          # Passing paths to global MSBuild environment variables
+          # Passing variables to MSBuild and the packaging step
           echo "CL=/I`"$libxmlInc`"" >> $env:GITHUB_ENV
           echo "LINK=/LIBPATH:`"$libxmlLib`"" >> $env:GITHUB_ENV
+          echo "LIBXML_DLL_PATH=$libxmlBin\libxml2.dll" >> $env:GITHUB_ENV
 
 #      - name: Install Dependencies (vcpkg)
 #        run: |
@@ -76,10 +84,10 @@ jobs:
 #              New-Item -ItemType Junction -Path "$vcpkgInclude/libxml" -Target "$vcpkgInclude/libxml2/libxml"
 #          }
 
-      - name: Restore NuGet Packages
-        run: |
-          cd main
-          nuget restore XMLTools.sln
+#      - name: Restore NuGet Packages
+#        run: |
+#          cd main
+#          nuget restore XMLTools.sln
 
       - name: Build XMLTools
         run: |
@@ -100,10 +108,11 @@ jobs:
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
           $archiveName = "XMLTools_$($tagName)_$($archi).7z"
           
-          $dllPath = "$platform\${{ matrix.configuration }}\XMLTools.dll"
+          $xmlToolsDll = "$platform\${{ matrix.configuration }}\XMLTools.dll"
+          $libxmlDll = "$env:LIBXML_DLL_PATH"
           
-          if (Test-Path $dllPath) {
-              7z a -t7z -mx9 $archiveName $dllPath
+          if (Test-Path $xmlToolsDll) {
+              7z a -t7z -mx9 $archiveName $xmlToolsDll $libxmlDll
               Copy-Item $archiveName ..\
           }
 
