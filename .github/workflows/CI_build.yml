@@ -54,16 +54,25 @@ jobs:
       - name: Prepare Include Paths
         shell: pwsh
         run: |
-          # Paths after 'nmake install' inside libxml2_source
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
+          # Important: MSVC must see the folder containing the libxml folder.
+          # nmake install places them in build\include\libxml2\libxml
           $libxmlInc = "$libxmlBase\include\libxml2"
-          $libxmlLib = "$libxmlBase\lib"
-          $libxmlBin = "$libxmlBase\bin" # Здесь лежит dll
+          $libxmlLibDir = "$libxmlBase\lib"
           
-          # Passing variables to MSBuild and the packaging step
+          Write-Host "Setting up paths for libxml2.lib..."
+          
+          # Set search paths and FORCED linking of libxml2.lib
+          # We use libxml2.lib because it corresponds to libxml2.dll
           echo "CL=/I`"$libxmlInc`"" >> $env:GITHUB_ENV
-          echo "LINK=/LIBPATH:`"$libxmlLib`"" >> $env:GITHUB_ENV
-          echo "LIBXML_DLL_PATH=$libxmlBin\libxml2.dll" >> $env:GITHUB_ENV
+          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
+          echo "LIB=$libxmlLibDir;" >> $env:GITHUB_ENV
+          echo "LIBXML_DLL_PATH=$(Get-Location)\libxml2_source\build\bin\libxml2.dll" >> $env:GITHUB_ENV
+
+      - name: Restore NuGet Packages
+        run: |
+          cd main
+          nuget restore XMLTools.sln
 
 #      - name: Install Dependencies (vcpkg)
 #        run: |
@@ -84,19 +93,11 @@ jobs:
 #              New-Item -ItemType Junction -Path "$vcpkgInclude/libxml" -Target "$vcpkgInclude/libxml2/libxml"
 #          }
 
-#      - name: Restore NuGet Packages
-#        run: |
-#          cd main
-#          nuget restore XMLTools.sln
-
       - name: Build XMLTools
         run: |
           cd main
-          msbuild XMLTools.sln `
-            /m `
-            /p:Configuration="${{ matrix.configuration }}" `
-            /p:Platform="${{ matrix.platform }}" `
-            /p:PlatformToolset="${{ matrix.toolset }}"
+          # Add /p:LinkIncremental=false to avoid build conflicts
+          msbuild XMLTools.sln /m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}" /p:LinkIncremental=false
 
       - name: Prepare Artifacts
         if: matrix.configuration == 'Release'
@@ -113,7 +114,7 @@ jobs:
           
           if (Test-Path $xmlToolsDll) {
               7z a -t7z -mx9 $archiveName $xmlToolsDll $libxmlDll
-              Copy-Item $archiveName ..\
+              Move-Item $archiveName ..\
           }
 
       - name: Upload to Workflow
