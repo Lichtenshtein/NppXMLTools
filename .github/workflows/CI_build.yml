@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        # run: |
+          # git submodule update --init --recursive
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -28,9 +30,22 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
 
-      - name: Restore NuGet Packages
+      - name: Install Dependencies (vcpkg)
         run: |
-          nuget restore SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory packages
+          # vcpkg integration with MSBuild (automatically sets include/lib paths)
+          vcpkg integrate install
+          
+          # Installing libxml2 and gtest for the required architectures
+          if ("${{ matrix.platform }}" -eq "x64") {
+            vcpkg install libxml2:x64-windows gtest:x64-windows
+          }
+          if ("${{ matrix.platform }}" -eq "Win32") {
+            vcpkg install libxml2:x86-windows gtest:x86-windows
+          }
+
+#      - name: Restore NuGet Packages
+#        run: |
+#          nuget restore SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory packages
           
       - name: Restore NuGet Packages2
         run: |
