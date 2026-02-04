@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [Win32, x64]
+        platform: [x64, Win32]
         configuration: [Release]
         toolset: [v143]
 
@@ -51,23 +51,26 @@ jobs:
           nmake /f Makefile.msvc install
           if %errorlevel% neq 0 exit /b %errorlevel%
 
+      - name: Install GTest (vcpkg)
+        run: |
+          vcpkg integrate install
+          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
+          vcpkg install gtest:$triplet
+
       - name: Prepare Include Paths
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          # Important: MSVC must see the folder containing the libxml folder.
-          # nmake install places them in build\include\libxml2\libxml
           $libxmlInc = "$libxmlBase\include\libxml2"
           $libxmlLibDir = "$libxmlBase\lib"
           
-          Write-Host "Setting up paths for libxml2.lib..."
+          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
+          $vcpkgInc = "C:\vcpkg\installed\$triplet\include"
           
-          # Set search paths and FORCED linking of libxml2.lib
-          # We use libxml2.lib because it corresponds to libxml2.dll
-          echo "CL=/I`"$libxmlInc`"" >> $env:GITHUB_ENV
+          echo "INCLUDE=$libxmlInc;$vcpkgInc;$env:INCLUDE" >> $env:GITHUB_ENV
           echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
-          echo "LIB=$libxmlLibDir;" >> $env:GITHUB_ENV
-          echo "LIBXML_DLL_PATH=$(Get-Location)\libxml2_source\build\bin\libxml2.dll" >> $env:GITHUB_ENV
+          echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
+          echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
 
       - name: Restore NuGet Packages
         run: |
@@ -97,7 +100,11 @@ jobs:
         run: |
           cd main
           # Add /p:LinkIncremental=false to avoid build conflicts
-          msbuild XMLTools.sln /m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}" /p:LinkIncremental=false
+          msbuild XMLTools.sln `
+            /m `
+            /p:Configuration="${{ matrix.configuration }}" `
+            /p:Platform="${{ matrix.platform }}" `
+            /p:PlatformToolset="${{ matrix.toolset }}"
 
       - name: Prepare Artifacts
         if: matrix.configuration == 'Release'
