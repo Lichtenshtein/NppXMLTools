@@ -53,6 +53,7 @@ std::vector<XPathResultEntryType> LibxmlWrapper::xpathEvaluate(std::wstring xpat
 
 
 CleanUp:
+    (void)0;
     xmlXPathFreeContext(context);
     xmlFreeDoc(doc);
 

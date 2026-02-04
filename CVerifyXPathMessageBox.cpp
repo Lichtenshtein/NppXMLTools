@@ -60,15 +60,15 @@ void CVerifyXPathMessageBox::AddItem(CListCtrl* list, CStringW context, CStringW
 
 void CVerifyXPathMessageBox::AddAll(const std::vector<LoggingEntryType>& errors)
 {
-	m_listErrors.clear();
-	m_listErrors.resize(errors.size());
-	auto castToCStringW = [&](const LoggingEntryType& entry) {
-		const CStringW context = CStringW(entry.context.c_str(), entry.context.size());
-		const CStringW level = CStringW(entry.level.c_str(), entry.level.size());
-		const CStringW message = CStringW(entry.message.c_str(), entry.message.size());
-		return std::make_tuple(context, level, message);
-	};
-	std::transform(errors.begin(), errors.end(), m_listErrors.begin(), castToCStringW);
+    m_listErrors.clear();
+    m_listErrors.resize(errors.size());
+    auto castToCStringW = [&](const LoggingEntryType& entry) {
+        const CStringW context = CStringW(entry.context.c_str(), static_cast<int>(entry.context.size()));
+        const CStringW level   = CStringW(entry.level.c_str(), static_cast<int>(entry.level.size()));
+        const CStringW message = CStringW(entry.message.c_str(), static_cast<int>(entry.message.size()));
+        return std::make_tuple(context, level, message);
+    };
+    std::transform(errors.begin(), errors.end(), m_listErrors.begin(), castToCStringW);
 }
 
 void CVerifyXPathMessageBox::ClearList()
