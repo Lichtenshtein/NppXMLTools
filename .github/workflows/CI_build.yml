@@ -77,36 +77,57 @@ jobs:
           cd main
           nuget restore XMLTools.sln
 
+#      - name: Disable Precompiled Header
+#        shell: pwsh
+#        run: |
+#          # 
+#          (Get-Content main\XMLTools.vcxproj) -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content main\XMLTools.vcxproj
+
       - name: Build XMLTools
         run: |
           cd main
           # Add /p:LinkIncremental=false to avoid build conflicts
           # /p:PrecompiledHeader=NotUsing disables the requirement for stdafx.h on all platforms. Win32 should build now.
+          # Use UseSharedCompilation=false and ForceNoVpch to suppress PCH
+msbuild XMLTools.sln `
           msbuild XMLTools.sln `
             /m `
             /p:Configuration="${{ matrix.configuration }}" `
             /p:Platform="${{ matrix.platform }}" `
             /p:PlatformToolset="${{ matrix.toolset }}" `
             /p:PrecompiledHeader=NotUsing `
+            /p:TrackFileAccess=false `
             /p:LinkIncremental=false
 
       - name: Prepare Artifacts
         if: matrix.configuration == 'Release'
         shell: pwsh
         run: |
-          cd main
           $platform = "${{ matrix.platform }}"
           $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
           $archiveName = "XMLTools_$($tagName)_$($archi).7z"
           
-          $xmlToolsDll = "$platform\${{ matrix.configuration }}\XMLTools.dll"
-          $libxmlDll = "$env:LIBXML_DLL_PATH"
+          $targetDir = "main\$platform\Release"
+          $readmeSource = "main\install\ReadMe.txt"
+          $libxmlDllSource = "$env:LIBXML_DLL_PATH"
           
-          if (Test-Path $xmlToolsDll) {
-              7z a -t7z -mx9 $archiveName $xmlToolsDll $libxmlDll
-              Move-Item $archiveName ..\
+          # Copy the dependencies to the plugin folder
+          if (Test-Path $libxmlDllSource) {
+              Copy-Item $libxmlDllSource -Destination $targetDir\
+              Write-Host "Copied libxml2.dll to $targetDir"
           }
+          if (Test-Path $readmeSource) {
+              Copy-Item $readmeSource -Destination $targetDir\
+              Write-Host "Copied ReadMe.txt to $targetDir"
+          }
+
+          # Pack the contents of the folder (only the necessary files)
+          cd $targetDir
+          # archive the plugin DLL, DLL libraries, and description
+          7z a -t7z -mx9 "../../$archiveName" "XMLTools.dll" "libxml2.dll" "ReadMe.txt"
+          
+          Write-Host "Archive created: $archiveName"
 
       - name: Upload to Workflow
         if: matrix.configuration == 'Release'
