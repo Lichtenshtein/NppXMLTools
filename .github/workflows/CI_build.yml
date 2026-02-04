@@ -74,18 +74,46 @@ jobs:
         shell: pwsh
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
-          $archiveName = "XMLTools_$($tagName)_x86.7z"
+          $platform = "${{ matrix.platform }}"
+          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
+          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
 
-          New-Item -ItemType Directory -Path "dist"
-          Copy-Item "main\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
+          New-Item -ItemType Directory -Path "dist" -Force
+
+          $possiblePaths = @(
+              "main\$platform\Release\XMLTools.dll",
+              "main\Release\XMLTools.dll"
+          )
+          
+          $dllFound = $false
+          foreach ($path in $possiblePaths) {
+              if (Test-Path $path) {
+                  Copy-Item $path -Destination "dist\"
+                  Write-Host "Found XMLTools.dll at: $path"
+                  $dllFound = $true
+                  break
+              }
+          }
+
+          if (-not $dllFound) {
+              Write-Error "Could not find XMLTools.dll in any of the expected folders!"
+              exit 1
+          }
+
+          if (Test-Path "$env:LIBXML_DLL_PATH") {
+              Copy-Item "$env:LIBXML_DLL_PATH" -Destination "dist\"
+          }
+          if (Test-Path "main\install\ReadMe.txt") {
+              Copy-Item "main\install\ReadMe.txt" -Destination "dist\"
+          }
 
           7z a -t7z -mx9 "$archiveName" ./dist/*
           echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
-      - name: Upload Win32
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: xmltools-win32
+          name: xmltools-${{ matrix.platform }}
           path: "*.7z"
 
   build-x64:
@@ -140,18 +168,46 @@ jobs:
         shell: pwsh
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
-          $archiveName = "XMLTools_$($tagName)_x64.7z"
+          $platform = "${{ matrix.platform }}"
+          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
+          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
 
-          New-Item -ItemType Directory -Path "dist"
-          Copy-Item "main\x64\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
+          New-Item -ItemType Directory -Path "dist" -Force
+
+          $possiblePaths = @(
+              "main\$platform\Release\XMLTools.dll",
+              "main\Release\XMLTools.dll"
+          )
+          
+          $dllFound = $false
+          foreach ($path in $possiblePaths) {
+              if (Test-Path $path) {
+                  Copy-Item $path -Destination "dist\"
+                  Write-Host "Found XMLTools.dll at: $path"
+                  $dllFound = $true
+                  break
+              }
+          }
+
+          if (-not $dllFound) {
+              Write-Error "Could not find XMLTools.dll in any of the expected folders!"
+              exit 1
+          }
+
+          if (Test-Path "$env:LIBXML_DLL_PATH") {
+              Copy-Item "$env:LIBXML_DLL_PATH" -Destination "dist\"
+          }
+          if (Test-Path "main\install\ReadMe.txt") {
+              Copy-Item "main\install\ReadMe.txt" -Destination "dist\"
+          }
 
           7z a -t7z -mx9 "$archiveName" ./dist/*
           echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
-      - name: Upload x64
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: xmltools-x64
+          name: xmltools-${{ matrix.platform }}
           path: "*.7z"
 
   publish:
