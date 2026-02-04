@@ -38,18 +38,29 @@ jobs:
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          $libxmlInc = "$libxmlBase\include\libxml2"
-          $libxmlLibDir = "$libxmlBase\lib"
-          (Get-Content $projFile) `
-            -replace '[^; \t\r\n]+\\libxml2\.lib', 'libxml2.lib' `
-            -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content $projFile
-
+          $projFile = "main\XMLTools.vcxproj"
+          
+          [xml]$xml = Get-Content $projFile
+          $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+          $ns.AddNamespace("ms", "http://schemas.microsoft.com")
+          
+          $nodes = $xml.SelectNodes("//ms:AdditionalDependencies", $ns)
+          foreach ($node in $nodes) {
+              $node.InnerXml = ($node.InnerXml -split ';' | Where-Object { $_ -notmatch 'libxml2' }) -join ';'
+          }
+          
+          $pchNodes = $xml.SelectNodes("//ms:PrecompiledHeader", $ns)
+          foreach ($node in $pchNodes) {
+              $node.InnerXml = "NotUsing"
+          }
+          
+          $xml.Save($projFile)
+          
           vcpkg integrate install
           vcpkg install gtest:x86-windows
-
-          echo "CL=/I`"$libxmlInc`" /I`"$vcpkgInc`"" >> $env:GITHUB_ENV
-          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
-          echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
+          
+          echo "CL=/I`"$libxmlBase\include\libxml2`" /I`"C:\vcpkg\installed\x86-windows\include`"" >> $env:GITHUB_ENV
+          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlBase\lib`"" >> $env:GITHUB_ENV
           echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
 
       - name: Build Win32
