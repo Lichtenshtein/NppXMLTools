@@ -31,6 +31,10 @@ jobs:
       - name: Restore NuGet Packages
         run: |
           nuget restore SimpleXmlLib\SimpleXmlTests\packages.config -PackagesDirectory packages
+          
+      - name: Restore NuGet Packages2
+        run: |
+          nuget restore XMLTools.sln
 
       - name: Build Solution
         run: |
