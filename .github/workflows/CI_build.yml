@@ -1,4 +1,4 @@
-name: Build XMLTools
+name: Build and Release XMLTools
 
 on:
 #  push:
@@ -7,22 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-win32:
     runs-on: windows-2022
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [x64, Win32]
-        configuration: [Release]
-        toolset: [v143]
-
     steps:
-      - name: Checkout XMLTools
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           path: main
-        # run: |
-          # git submodule update --init --recursive
 
       - name: Checkout Custom libxml2
         uses: actions/checkout@v4
@@ -31,117 +22,122 @@ jobs:
           ref: haja.floring/addXPathVerification
           path: libxml2_source
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build Custom libxml2
+      - name: Build Custom libxml2 (x86)
         shell: cmd
         run: |
-          :: Find the path to vcvarsall.bat (for VS 2022 Enterprise on Runner)
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.platform == 'Win32' && 'x86' || 'x64' }}
-          
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
           cd libxml2_source\win32
-          
           cscript configure.js compiler=msvc prefix=..\build include=..\include lib=..\lib iconv=no icu=no zlib=no
-          if %errorlevel% neq 0 exit /b %errorlevel%
-          
           nmake /f Makefile.msvc
-          if %errorlevel% neq 0 exit /b %errorlevel%
-          
           nmake /f Makefile.msvc install
-          if %errorlevel% neq 0 exit /b %errorlevel%
 
-      - name: Install GTest (vcpkg)
-        run: |
-          vcpkg integrate install
-          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
-          vcpkg install gtest:$triplet
-
-      - name: Prepare Include Paths
+      - name: Patch Project
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          $libxmlInc = "$libxmlBase\include\libxml2"
-          $libxmlLibDir = "$libxmlBase\lib"
-
-          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
-          $vcpkgInc = "C:\vcpkg\installed\$triplet\include"
-
-          echo "CL=/I`"$libxmlInc`" /I`"$vcpkgInc`"" >> $env:GITHUB_ENV
-          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
-          echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
+          $projFile = "main\XMLTools.vcxproj"
+          (Get-Content $projFile) `
+            -replace '[^; \t\r\n]+\\libxml2\.lib', 'libxml2.lib' `
+            -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content $projFile
+          
+          vcpkg integrate install
+          vcpkg install gtest:x86-windows
+          echo "CL=/I`"$libxmlBase\include\libxml2`" /I`"C:\vcpkg\installed\x86-windows\include`"" >> $env:GITHUB_ENV
+          echo "LINK=/LIBPATH:`"$libxmlBase\lib`" libxml2.lib" >> $env:GITHUB_ENV
           echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
 
-      - name: Restore NuGet Packages
+      - name: Build Win32
         run: |
           cd main
           nuget restore XMLTools.sln
+          msbuild XMLTools.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143
 
-     # - name: Disable Precompiled Header
-       # shell: pwsh
-       # run: |
-         # (Get-Content main\XMLTools.vcxproj) -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content main\XMLTools.vcxproj
-
-      - name: Build XMLTools
-        run: |
-          cd main
-          # Add /p:LinkIncremental=false to avoid build conflicts
-          # /p:PrecompiledHeader=NotUsing disables the requirement for stdafx.h on all platforms. Win32 should build now.
-          # Use UseSharedCompilation=false and ForceNoVpch to suppress PCH
-          msbuild XMLTools.sln `
-            /m `
-            /p:Configuration="${{ matrix.configuration }}" `
-            /p:Platform="${{ matrix.platform }}" `
-            /p:PlatformToolset="${{ matrix.toolset }}" `
-            /p:LinkIncremental=false
-
-      - name: Prepare Artifacts
-        if: matrix.configuration == 'Release'
+      - name: Prepare Artifact
         shell: pwsh
         run: |
-          $platform = "${{ matrix.platform }}"
-          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
-          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
-          
-          $targetDir = "main\$platform\Release"
-          $readmeSource = "main\install\ReadMe.txt"
-          $libxmlDllSource = "$env:LIBXML_DLL_PATH"
-          
-          # Copy the dependencies to the plugin folder
-          if (Test-Path $libxmlDllSource) {
-              Copy-Item $libxmlDllSource -Destination $targetDir\
-              Write-Host "Copied libxml2.dll to $targetDir"
-          }
-          if (Test-Path $readmeSource) {
-              Copy-Item $readmeSource -Destination $targetDir\
-              Write-Host "Copied ReadMe.txt to $targetDir"
-          }
+          $archiveName = "XMLTools_$($tagName)_x86.7z"
+          New-Item -ItemType Directory -Path "dist"
+          Copy-Item "main\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
+          cd dist ; 7z a -t7z -mx9 "../../$archiveName" *
+          echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
-          # Pack the contents of the folder (only the necessary files)
-          cd $targetDir
-          # archive the plugin DLL, DLL libraries, and description
-          7z a -t7z -mx9 "../../$archiveName" "XMLTools.dll" "libxml2.dll" "ReadMe.txt"
-          
-          Write-Host "Archive created: $archiveName"
-
-      - name: Upload to Workflow
-        if: matrix.configuration == 'Release'
+      - name: Upload Win32
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ matrix.platform }}
+          name: xmltools-win32
           path: "*.7z"
-          retention-days: 1
+
+  build-x64:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      - name: Checkout Custom libxml2
+        uses: actions/checkout@v4
+        with:
+          repository: haja-fgabriel/libxml2
+          ref: haja.floring/addXPathVerification
+          path: libxml2_source
+
+      - name: Build Custom libxml2 (x64)
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cd libxml2_source\win32
+          cscript configure.js compiler=msvc prefix=..\build include=..\include lib=..\lib iconv=no icu=no zlib=no
+          nmake /f Makefile.msvc
+          nmake /f Makefile.msvc install
+
+      - name: Patch Project
+        shell: pwsh
+        run: |
+          $libxmlBase = "$(Get-Location)\libxml2_source\build"
+          $projFile = "main\XMLTools.vcxproj"
+          (Get-Content $projFile) `
+            -replace '[^; \t\r\n]+\\libxml2\.lib', 'libxml2.lib' `
+            -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content $projFile
+          
+          vcpkg integrate install
+          vcpkg install gtest:x64-windows
+          echo "CL=/I`"$libxmlBase\include\libxml2`" /I`"C:\vcpkg\installed\x64-windows\include`"" >> $env:GITHUB_ENV
+          echo "LINK=/LIBPATH:`"$libxmlBase\lib`" libxml2.lib" >> $env:GITHUB_ENV
+          echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
+
+      - name: Build x64
+        run: |
+          cd main
+          nuget restore XMLTools.sln
+          msbuild XMLTools.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+
+      - name: Prepare Artifact
+        shell: pwsh
+        run: |
+          $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
+          $archiveName = "XMLTools_$($tagName)_x64.7z"
+          New-Item -ItemType Directory -Path "dist"
+          Copy-Item "main\x64\Release\XMLTools.dll", "$env:LIBXML_DLL_PATH", "main\install\ReadMe.txt" -Destination "dist\"
+          cd dist ; 7z a -t7z -mx9 "../../$archiveName" *
+          echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
+
+      - name: Upload x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: xmltools-x64
+          path: "*.7z"
 
   publish:
-    needs: build
+    needs: [build-win32, build-x64]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Download all artifacts
+      - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: xmltools-*
           merge-multiple: true
 
       - name: Set Release Tag
