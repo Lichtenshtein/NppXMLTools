@@ -82,6 +82,13 @@ CSelectFileDlg* pSelectFileDlg = NULL;
 void XMLValidation(int informIfNoError) {
     dbgln("XMLValidation()");
 
+    // -1. save old current folder
+    wchar_t oldPath[MAX_PATH]{};
+    if (!_wgetcwd(oldPath, MAX_PATH)) {
+        // Failed to retrieve folder
+        return;
+    }
+
     // 0. change current folder
     TCHAR currenPath[MAX_PATH] = { '\0' };
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDIRECTORY, MAX_PATH, (LPARAM)currenPath);
@@ -182,6 +189,8 @@ void XMLValidation(int informIfNoError) {
     delete[] data; data = NULL;
 
     delete wrapper;
+    // 2. Restore the original folder
+    _wchdir(oldPath);
 }
 
 void autoValidation() {
