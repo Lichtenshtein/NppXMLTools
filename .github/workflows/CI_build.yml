@@ -4,8 +4,6 @@ on:
 #  push:
 #    branches: [ main ]
 #    tags: [ 'v*' ]
-#  pull_request:
-#    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -19,45 +17,73 @@ jobs:
         toolset: [v143]
 
     steps:
-      - name: Checkout code
+      - name: Checkout XMLTools
         uses: actions/checkout@v4
+        with:
+          path: main
         # run: |
           # git submodule update --init --recursive
+
+      - name: Checkout Custom libxml2
+        uses: actions/checkout@v4
+        with:
+          repository: haja-fgabriel/libxml2
+          ref: haja.floring/addXPathVerification
+          path: libxml2_source
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
-
-      - name: Install Dependencies (vcpkg)
+      - name: Build Custom libxml2
+        shell: cmd
         run: |
-          vcpkg integrate install
+          cd libxml2_source\win32
+          :: Setting up the compiler environment (x86 or x64)
+          set ARCH=%{{ matrix.platform }}%
+          if "%ARCH%"=="Win32" set ARCH=x86
           
-          if ("${{ matrix.platform }}" -eq "x64") {
-            $triplet = "x64-windows"
-          } else {
-            $triplet = "x86-windows"
-          }
-          
-          vcpkg install libxml2:$triplet gtest:$triplet
-          
-          # vcpkg places files in include/libxml2/libxml.
-          # Create a symlink or copy it so the compiler sees the libxml/*.h path.
-          $vcpkgInclude = "C:/vcpkg/installed/$triplet/include"
-          if (Test-Path "$vcpkgInclude/libxml2/libxml") {
-              New-Item -ItemType Junction -Path "$vcpkgInclude/libxml" -Target "$vcpkgInclude/libxml2/libxml"
-          }
+          cscript configure.js compiler=msvc prefix=..\build include=..\include lib=..\lib iconv=no icu=no
+          nmake /f Makefile.msvc
+          nmake /f Makefile.msvc install
 
-      - name: Restore NuGet Packages2
+      - name: Prepare Include Paths
+        shell: pwsh
         run: |
+          # We create paths for the compiler so that it can see our custom libxml2
+          $libxmlInc = "$(Get-Location)\libxml2_source\include"
+          $libxmlLib = "$(Get-Location)\libxml2_source\bin.msvc"
+          
+          # Passing paths to global MSBuild environment variables
+          echo "CL=/I`"$libxmlInc`"" >> $env:GITHUB_ENV
+          echo "LINK=/LIBPATH:`"$libxmlLib`"" >> $env:GITHUB_ENV
+
+#      - name: Install Dependencies (vcpkg)
+#        run: |
+#          vcpkg integrate install
+#          
+#          if ("${{ matrix.platform }}" -eq "x64") {
+#            $triplet = "x64-windows"
+#          } else {
+#            $triplet = "x86-windows"
+#          }
+#          
+#          vcpkg install libxml2:$triplet gtest:$triplet
+#          
+#          # vcpkg places files in include/libxml2/libxml.
+#          # Create a symlink or copy it so the compiler sees the libxml/*.h path.
+#          $vcpkgInclude = "C:/vcpkg/installed/$triplet/include"
+#          if (Test-Path "$vcpkgInclude/libxml2/libxml") {
+#              New-Item -ItemType Junction -Path "$vcpkgInclude/libxml" -Target "$vcpkgInclude/libxml2/libxml"
+#          }
+
+      - name: Restore NuGet Packages
+        run: |
+          cd main
           nuget restore XMLTools.sln
 
-      - name: Build Solution
+      - name: Build XMLTools
         run: |
-          $triplet = if ("${{ matrix.platform }}" -eq "x64") { "x64-windows" } else { "x86-windows" }
-          $env:IncludePath = "C:\vcpkg\installed\$triplet\include;" + $env:IncludePath
-          
+          cd main
           msbuild XMLTools.sln `
             /m `
             /p:Configuration="${{ matrix.configuration }}" `
@@ -68,19 +94,17 @@ jobs:
         if: matrix.configuration == 'Release'
         shell: pwsh
         run: |
+          cd main
           $platform = "${{ matrix.platform }}"
           $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
           $archiveName = "XMLTools_$($tagName)_$($archi).7z"
-
+          
           $dllPath = "$platform\${{ matrix.configuration }}\XMLTools.dll"
-
+          
           if (Test-Path $dllPath) {
               7z a -t7z -mx9 $archiveName $dllPath
-              echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
-          } else {
-              Write-Error "DLL not found at $dllPath"
-              exit 1
+              Copy-Item $archiveName ..\
           }
 
       - name: Upload to Workflow
@@ -88,12 +112,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
-          path: XMLTools_*.7z
+          path: "*.7z"
           retention-days: 1
 
   publish:
     needs: build
-    if: github.event_name != 'pull_request' && (github.ref_type == 'tag' || github.ref_name == 'main')
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
