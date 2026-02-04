@@ -74,29 +74,17 @@ jobs:
         shell: pwsh
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
-          $platform = "${{ matrix.platform }}"
-          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
-          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
+          $archiveName = "XMLTools_$($tagName)_x86.7z"
 
           New-Item -ItemType Directory -Path "dist" -Force
 
-          $possiblePaths = @(
-              "main\$platform\Release\XMLTools.dll",
-              "main\Release\XMLTools.dll"
-          )
+          $dllPath = "main\Win32\Release\XMLTools.dll"
           
-          $dllFound = $false
-          foreach ($path in $possiblePaths) {
-              if (Test-Path $path) {
-                  Copy-Item $path -Destination "dist\"
-                  Write-Host "Found XMLTools.dll at: $path"
-                  $dllFound = $true
-                  break
-              }
-          }
-
-          if (-not $dllFound) {
-              Write-Error "Could not find XMLTools.dll in any of the expected folders!"
+          if (Test-Path $dllPath) {
+              Copy-Item $dllPath -Destination "dist\"
+              Write-Host "Found XMLTools.dll at: $dllPath"
+          } else {
+              Write-Error "Could not find XMLTools.dll at $dllPath"
               exit 1
           }
 
@@ -113,7 +101,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: xmltools-${{ matrix.platform }}
+          name: xmltools-win32
           path: "*.7z"
 
   build-x64:
@@ -168,29 +156,17 @@ jobs:
         shell: pwsh
         run: |
           $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-build" }
-          $platform = "${{ matrix.platform }}"
-          $archi = if ($platform -eq "Win32") { "x86" } else { "x64" }
-          $archiveName = "XMLTools_$($tagName)_$($archi).7z"
+          $archiveName = "XMLTools_$($tagName)_x64.7z"
 
           New-Item -ItemType Directory -Path "dist" -Force
 
-          $possiblePaths = @(
-              "main\$platform\Release\XMLTools.dll",
-              "main\Release\XMLTools.dll"
-          )
+          $dllPath = "main\x64\Release\XMLTools.dll"
           
-          $dllFound = $false
-          foreach ($path in $possiblePaths) {
-              if (Test-Path $path) {
-                  Copy-Item $path -Destination "dist\"
-                  Write-Host "Found XMLTools.dll at: $path"
-                  $dllFound = $true
-                  break
-              }
-          }
-
-          if (-not $dllFound) {
-              Write-Error "Could not find XMLTools.dll in any of the expected folders!"
+          if (Test-Path $dllPath) {
+              Copy-Item $dllPath -Destination "dist\"
+              Write-Host "Found XMLTools.dll at: $dllPath"
+          } else {
+              Write-Error "Could not find XMLTools.dll at $dllPath"
               exit 1
           }
 
@@ -207,7 +183,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: xmltools-${{ matrix.platform }}
+          name: xmltools-x64
           path: "*.7z"
 
   publish:
