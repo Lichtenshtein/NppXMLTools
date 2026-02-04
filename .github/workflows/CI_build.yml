@@ -34,33 +34,29 @@ jobs:
           nmake /f Makefile.msvc
           nmake /f Makefile.msvc install
 
-      - name: Patch Project
+      - name: Prepare Include Paths
         shell: pwsh
         run: |
           $libxmlBase = "$(Get-Location)\libxml2_source\build"
-          $projFile = "main\XMLTools.vcxproj"
+          $libxmlLibDir = "$libxmlBase\lib"
+          $libxmlInc = "$libxmlBase\include\libxml2"
           
-          [xml]$xml = Get-Content $projFile
-          $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-          $ns.AddNamespace("ms", "http://schemas.microsoft.com")
+          $fakePath = "$(Get-Location)\libxml2\build-VS2022\Release"
+          New-Item -ItemType Directory -Force -Path $fakePath
           
-          $nodes = $xml.SelectNodes("//ms:AdditionalDependencies", $ns)
-          foreach ($node in $nodes) {
-              $node.InnerXml = ($node.InnerXml -split ';' | Where-Object { $_ -notmatch 'libxml2' }) -join ';'
+          Copy-Item "$libxmlLibDir\libxml2.lib" -Destination "$fakePath\libxml2.lib"
+          if (Test-Path "$libxmlLibDir\libxml2_a.lib") {
+              Copy-Item "$libxmlLibDir\libxml2_a.lib" -Destination "$fakePath\libxml2-static.lib"
           }
+
+          (Get-Content main\XMLTools.vcxproj) -replace '<PrecompiledHeader>Use</PrecompiledHeader>', '<PrecompiledHeader>NotUsing</PrecompiledHeader>' | Set-Content main\XMLTools.vcxproj
+
+          $triplet = if ("${{ matrix.platform }}" -eq "Win32") { "x86-windows" } else { "x64-windows" }
+          $vcpkgInc = "C:\vcpkg\installed\$triplet\include"
           
-          $pchNodes = $xml.SelectNodes("//ms:PrecompiledHeader", $ns)
-          foreach ($node in $pchNodes) {
-              $node.InnerXml = "NotUsing"
-          }
-          
-          $xml.Save($projFile)
-          
-          vcpkg integrate install
-          vcpkg install gtest:x86-windows
-          
-          echo "CL=/I`"$libxmlBase\include\libxml2`" /I`"C:\vcpkg\installed\x86-windows\include`"" >> $env:GITHUB_ENV
-          echo "LINK=libxml2.lib /LIBPATH:`"$libxmlBase\lib`"" >> $env:GITHUB_ENV
+          echo "CL=/I`"$libxmlInc`" /I`"$vcpkgInc`"" >> $env:GITHUB_ENV
+          echo "LINK=/LIBPATH:`"$libxmlLibDir`"" >> $env:GITHUB_ENV
+          echo "LIB=$libxmlLibDir;$env:LIB" >> $env:GITHUB_ENV
           echo "LIBXML_DLL_PATH=$libxmlBase\bin\libxml2.dll" >> $env:GITHUB_ENV
 
       - name: Build Win32
