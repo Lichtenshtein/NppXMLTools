@@ -1,10 +1,12 @@
-name: Build and Release XMLTools with SaxonC-HE 12.8.0
+name: XMLTools with SaxonC-HE 12.8.0 with manual tag
 
 on:
-#  push:
-#    branches: [ main ]
-#    tags: [ 'v*' ]
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'v12.8.0 beta'
+        required: true
+        default: 'latest-manual'
 
 jobs:
   build-x64:
@@ -68,24 +70,26 @@ jobs:
         id: set-tag
         shell: pwsh
         run: |
-          # Create a tag: If it's a real tag (v1.0), use it.
-          # If it's a manual launch or push to a branch, create a tag based on the branch.
+          $inputTag = "${{ github.event.inputs.release_version }}".Trim()
           $branchName = "${{ github.ref_name }}".Replace("/", "-")
-          $tagName = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "latest-$branchName" }
 
+          $tagName = "$inputTag-$branchName"
           $archiveName = "XMLTools_$($tagName)_x64.7z"
-          echo "RELEASE_TAG=$tagName" >> $env:GITHUB_OUTPUT # ִכÿ הזמבû publish
+
+          echo "RELEASE_TAG=$tagName" >> $env:GITHUB_OUTPUT
           echo "ARCHIVE_NAME=$archiveName" >> $env:GITHUB_ENV
 
           New-Item -ItemType Directory -Path "dist" -Force
           Copy-Item "main\x64\Release\XMLTools.dll", "main\install\ReadMe.txt" -Destination "dist\"
           Copy-Item "$env:LIBXML_DLL_PATH" -Destination "dist\"
 
+          if ("${{ github.ref_name }}" -eq "UpdateToSaxonC128") {
           Write-Host "Downloading SaxonC HE 12.8 binaries..."
           $saxonCoreUrl = "https://raw.githubusercontent.com/martin-honnen/xmltools/refs/heads/UpdateToSaxonC128/SaxonCHEHelper/bin/saxonc-core-he.dll"
           $saxonHeUrl = "https://raw.githubusercontent.com/martin-honnen/xmltools/refs/heads/UpdateToSaxonC128/SaxonCHEHelper/bin/saxonc-he.dll"
           Invoke-WebRequest -Uri $saxonCoreUrl -OutFile "dist\saxonc-core-he.dll"
           Invoke-WebRequest -Uri $saxonHeUrl -OutFile "dist\saxonc-he.dll"
+          }
 
           7z a -t7z -mx9 "$archiveName" ./dist/*
 
